@@ -3,9 +3,9 @@ from xavier.bot import Bot
 from xavier.http import Response, HTTPError
 
 
-def build_raw_event(path=u'/abc'):
+def build_raw_event(path=u'/abc', content_type='application/json', body=None):
     return {
-        u'body': None,
+        u'body': body,
         u'headers': {
             u'Accept': u'*/*',
             u'Accept-Encoding': u'gzip, deflate',
@@ -23,6 +23,7 @@ def build_raw_event(path=u'/abc'):
             u'X-Forwarded-For': u'67.166.124.36, 54.182.238.75',
             u'X-Forwarded-Port': u'443',
             u'X-Forwarded-Proto': u'https',
+            u'Content-Type': content_type,
             u'x-api-key': u'54bUUzjrml4sQWuJiZP51EEQYe45g3j6rAuMjwO5'
         },
         u'httpMethod': u'GET',
@@ -68,6 +69,20 @@ def test_lambda_http_event_parse():
     assert raw_event['path'] == http_event.path
     assert raw_event['body'] == http_event.body
     assert raw_event['queryStringParameters']['a'] == http_event.params['a']
+
+
+def test_parse_body():
+    raw_event = build_raw_event(body='{"awesome": "awesome"}')
+
+    http_event = LambdaHTTPEvent.from_raw_event(raw_event)
+
+    assert http_event.parse_body() == {'awesome': 'awesome'}
+
+    raw_event = build_raw_event(content_type='application/x-www-form-urlencoded', body='a=b')
+
+    http_event = LambdaHTTPEvent.from_raw_event(raw_event)
+
+    assert http_event.parse_body() == {'a': ['b']}
 
 
 def test_build_lambda_router_for_bot():

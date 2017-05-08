@@ -1,17 +1,21 @@
-# Xavier is a serverless bot for bepress
+Xavier: AWS Lambda Bot
+======================
 
-This bot exists to help us do chat ops, and glue things together.
+Xavier is a bot.
 
 
-## Features
+Features
+--------
 
 - Inbound Web hooks
 - Async/offline functions
 - Actions like
 
-## Examples of raw data the bot deals with
+Examples
+--------
 
-### Slack / Command
+Slack / Command
+^^^^^^^^^^^^^^^
 
 Data you get from slack for a /slash command in webhook post
 
@@ -30,7 +34,8 @@ text=94070
 response_url=https://hooks.slack.com/commands/1234/5678
 ```
 
-### Amazon SNS
+Amazon SNS
+^^^^^^^^^^
 
 SNS Message
 
@@ -169,7 +174,8 @@ Amazon SES Email
 }
 ```
 
-### Web Input
+Web Input
+^^^^^^^^^
 
 Web input
 

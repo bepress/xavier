@@ -1,9 +1,8 @@
+setup:
+	bin/setup.sh
 
 clean:
 	bin/clean.sh
 
-boot:
-	bin/boot.sh
-
 test:
-	py.test
+	bin/test.sh

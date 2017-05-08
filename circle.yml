@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/xavier
+    docker:
+     - image: bepress/build-base:latest
+    steps:
+      - checkout
+      - restore_cache:
+          key: xavier-{{ checksum "test_requirements.txt" }}
+      - run: make setup
+      - run: make test

@@ -53,6 +53,9 @@ Example Event
  u'stageVariables': None}
 
 """
+import json
+from urllib.parse import parse_qs
+
 from frozendict import frozendict
 from functools import partial
 
@@ -82,6 +85,12 @@ class LambdaHTTPEvent(object):
         request_context = event.get('requestContext')
 
         return cls(method, path, body, params, headers, request_context, event)
+
+    def parse_body(self):
+        if self.headers.get('Content-Type', '').startswith('application/json'):
+            return json.loads(self.body)
+        else:
+            return parse_qs(self.body)
 
 
 def build_response(response):

@@ -1,4 +1,7 @@
 #! /bin/bash
 
-deactivate || true
-rm -fR .env
+set -e
+
+if [  -d ".venv" ]; then
+	rm -fR .venv
+fi
