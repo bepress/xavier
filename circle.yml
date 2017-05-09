@@ -6,7 +6,5 @@ jobs:
      - image: bepress/build-base:latest
     steps:
       - checkout
-      - restore_cache:
-          key: xavier-{{ checksum "test_requirements.txt" }}-{{ checksum "setup.py" }}
       - run: make setup
       - run: make test
