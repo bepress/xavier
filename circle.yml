@@ -7,6 +7,6 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: xavier-{{ checksum "test_requirements.txt" }}
+          key: xavier-{{ checksum "test_requirements.txt" }}-{{ checksum "setup.py" }}
       - run: make setup
       - run: make test
