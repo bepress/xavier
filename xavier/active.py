@@ -8,7 +8,7 @@ def register_bot(bot):
     thread_data.bot = bot
 
 
-def get_active_bot(bot):
+def get_active_bot():
     return thread_data.bot
 
 

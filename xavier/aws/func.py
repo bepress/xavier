@@ -60,6 +60,7 @@ from frozendict import frozendict
 from functools import partial
 
 from xavier.http import Response, HTTPError
+from xavier.datastructures import MultiValueDict
 
 
 class LambdaHTTPEvent(object):
@@ -90,7 +91,7 @@ class LambdaHTTPEvent(object):
         if self.headers.get('Content-Type', '').startswith('application/json'):
             return json.loads(self.body)
         else:
-            return parse_qs(self.body)
+            return MultiValueDict(parse_qs(self.body))
 
 
 def build_response(response):
