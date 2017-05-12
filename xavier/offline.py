@@ -1,5 +1,15 @@
+"""
+Offline Manager for Xavier Bot
+
+from myapp.tasks import crawl
+
+bot = Bot()
+
+bot.offline.task(crawl)
+
+"""
 import logging
-import pickle
+import jsonpickle
 
 logger = logging.getLogger(__name__)
 
@@ -14,23 +24,31 @@ class BackgroundTask(object):
         return self.func(*args, **kwargs)
 
     def delay(self, *args, **kwargs):
-        event = pickle.dumps((self.path, args, kwargs))
+        event = jsonpickle.dumps((self.path, args, kwargs))
         self.publish_event(event)
 
         return True
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return "BackgroundTask(path='{}')".format(self.path)
 
 
 class BackgroudQueue(object):
     def __init__(self, publish_event):
         self.functions = {}
         self.publish_event = publish_event
+        self.schedules = {}
 
     def process_event(self, event):
-        name, args, kwargs = pickle.loads(event)
+        name, args, kwargs = jsonpickle.loads(event)
 
         func = self.functions.get(name)
         if not func:
             logger.info("processing event - missing function name: %s", name)
+            raise Exception("Missing function")
 
         try:
             func(*args, **kwargs)
@@ -39,8 +57,33 @@ class BackgroudQueue(object):
 
         return True
 
-    def task(self, func):
+    def process_schedule(self, schedule):
+        if schedule not in self.schedules:
+            logger.info("Trying to process schedule for unknown schedule: %s", schedule)
+            return
 
-        func = BackgroundTask(func, self.publish_event)
-        self.functions[func.path] = func
-        return func
+        scheduled_functions = self.schedules[schedule]
+
+        logger.info("Running schedule %s registered functions: %s", schedule, scheduled_functions)
+
+        for func in scheduled_functions:
+            func.delay()
+
+    def task(self, schedules=None):
+        schedules = schedules if schedules else []
+
+        def wrapper(func):
+            func = BackgroundTask(func, self.publish_event)
+
+            self.functions[func.path] = func
+
+            for schedule in schedules:
+                if schedule not in self.schedules:
+                    self.schedules[schedule] = []
+
+                if func.path not in self.schedules[schedule]:
+                    self.schedules[schedule].append(func)
+
+            return func
+
+        return wrapper

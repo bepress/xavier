@@ -16,6 +16,7 @@ requires = [
     "requests>=2.4",
     "routes>=2.4",
     "frozendict",
+    "jsonpickle",
 ]
 test_requirements = ['pytest>=2.8.0']
 
