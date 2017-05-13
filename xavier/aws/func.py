@@ -103,9 +103,9 @@ def build_response(response):
     }
 
 
-def lambda_http_handler(bot, event, context):
+def lambda_http_handler(router, event, context):
     lambda_http_event = LambdaHTTPEvent.from_raw_event(event)
-    contoller = bot.find_route(lambda_http_event.path)
+    contoller = router.find_route(lambda_http_event.path)
     if not contoller:
         return build_response(
             Response(404, "Missing route")
@@ -124,5 +124,5 @@ def lambda_http_handler(bot, event, context):
         )
 
 
-def build_lambda_router_for_bot(bot):
-    return partial(lambda_http_handler, bot)
+def build_lambda_router(router):
+    return partial(lambda_http_handler, router)

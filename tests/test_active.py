@@ -1,15 +1,15 @@
-from xavier.active import register_bot, get_active_bot, unregister_bot
+from xavier.active import register_brain, get_active_brain, unregister_brain
 
 
 def test_active():
-    bot = 'a'
+    brain = 'a'
 
-    assert None is get_active_bot()
+    assert None is get_active_brain()
 
-    register_bot(bot)
+    register_brain(brain)
 
-    assert bot == get_active_bot()
+    assert brain == get_active_brain()
 
-    unregister_bot()
+    unregister_brain()
 
-    assert None is get_active_bot()
+    assert None is get_active_brain()

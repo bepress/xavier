@@ -1,11 +1,5 @@
 """
-Offline Manager for Xavier Bot
-
-from myapp.tasks import crawl
-
-bot = Bot()
-
-bot.offline.task(crawl)
+Offline Manager for Xavier
 
 """
 import logging
@@ -14,7 +8,7 @@ import jsonpickle
 logger = logging.getLogger(__name__)
 
 
-class BackgroundTask(object):
+class Task(object):
     def __init__(self, func, publish_event):
         self.func = func
         self.path = '%s.%s' % (func.__name__, func.__module__)
@@ -36,7 +30,7 @@ class BackgroundTask(object):
         return "BackgroundTask(path='{}')".format(self.path)
 
 
-class BackgroudQueue(object):
+class TaskQueue(object):
     def __init__(self, publish_event):
         self.functions = {}
         self.publish_event = publish_event
@@ -73,7 +67,7 @@ class BackgroudQueue(object):
         schedules = schedules if schedules else []
 
         def wrapper(func):
-            func = BackgroundTask(func, self.publish_event)
+            func = Task(func, self.publish_event)
 
             self.functions[func.path] = func
 

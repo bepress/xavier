@@ -1,16 +1,16 @@
 import threading
 
 thread_data = threading.local()
-thread_data.bot = None
+thread_data.brain = None
 
 
-def register_bot(bot):
-    thread_data.bot = bot
+def register_brain(brain):
+    thread_data.brain = brain
 
 
-def get_active_bot():
-    return thread_data.bot
+def get_active_brain():
+    return thread_data.brain
 
 
-def unregister_bot():
-    thread_data.bot = None
+def unregister_brain():
+    thread_data.brain = None

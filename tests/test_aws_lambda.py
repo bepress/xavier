@@ -1,6 +1,5 @@
-from xavier.aws.func import LambdaHTTPEvent, build_lambda_router_for_bot
-from xavier.bot import Bot
-from xavier.http import Response, HTTPError
+from xavier.aws.func import LambdaHTTPEvent, build_lambda_router
+from xavier.http import Response, HTTPError, Router
 
 
 def build_raw_event(path=u'/abc', content_type='application/json', body=None):
@@ -85,16 +84,16 @@ def test_parse_body():
     assert http_event.parse_body() == {'a': ['b']}
 
 
-def test_build_lambda_router_for_bot():
-    bot = Bot()
+def test_build_lambda_router_for_brain():
+    router = Router()
 
-    @bot.add_route('/test')
+    @router.add_route('/test')
     def view_func(*args, **kwargs):
         return Response(200, {
             'important': 'awesome'
         })
 
-    @bot.add_route('/error')
+    @router.add_route('/error')
     def error_func(*args, **kwargs):
         raise HTTPError(
             "This is a message",
@@ -102,11 +101,11 @@ def test_build_lambda_router_for_bot():
             599
         )
 
-    @bot.add_route('/really-error')
+    @router.add_route('/really-error')
     def really_error_func(*args, **kwargs):
         raise Exception("blah")
 
-    lambda_router = build_lambda_router_for_bot(bot)
+    lambda_router = build_lambda_router(router)
 
     raw_event = build_raw_event('/blah')
     resp = lambda_router(raw_event, {})
