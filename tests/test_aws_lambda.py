@@ -82,6 +82,10 @@ def test_parse_body():
     http_event = LambdaHTTPEvent.from_raw_event(raw_event)
 
     assert http_event.parse_body() == {'a': ['b']}
+    assert http_event.parse_body()['a'] == 'b'
+    assert http_event.parse_body().getlist('a') == ['b']
+
+    assert http_event.parsed_body == http_event.parse_body()
 
 
 def test_build_lambda_router_for_brain():

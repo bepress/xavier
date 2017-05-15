@@ -54,6 +54,7 @@ Example Event
 
 """
 import json
+import logging
 from urllib.parse import parse_qs
 
 from frozendict import frozendict
@@ -61,6 +62,8 @@ from functools import partial
 
 from xavier.http import Response, HTTPError
 from xavier.datastructures import MultiValueDict
+
+logger = logging.getLogger(__name__)
 
 
 class LambdaHTTPEvent(object):
@@ -93,6 +96,13 @@ class LambdaHTTPEvent(object):
         else:
             return MultiValueDict(parse_qs(self.body))
 
+    @property
+    def parsed_body(self):
+        if not hasattr(self, '_parsed_body'):
+            self._parsed_body = self.parse_body()
+
+        return self._parsed_body
+
 
 def build_response(response):
 
@@ -115,10 +125,12 @@ def lambda_http_handler(router, event, context):
         response = contoller['view'](lambda_http_event)
         return build_response(response)
     except HTTPError as e:
+        logger.info("HTTPError happened status_code: %s message: %s", e.status_code, e.message)
         return build_response(
             Response(e.status_code, e.message)
         )
     except Exception as e:
+        logger.error("An unknown exception happend", exc_info=True)
         return build_response(
             Response(500, 'Server error')
         )

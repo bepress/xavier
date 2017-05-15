@@ -40,7 +40,7 @@ def publish_sns_message(topic):
 
 def handle_sns_message(responder):
 
-    def _recieve(sns_event):
+    def _recieve(sns_event, context):
         logger.info("Recieved an sns event: %s", sns_event)
         for record in sns_event.get('Records', []):
             sns = record.get('Sns', {})

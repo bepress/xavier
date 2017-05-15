@@ -80,6 +80,6 @@ def test_sns_background_queue():
                     'Message': event
                 }
             }]
-        })
+        }, {})
 
         mock_background_func.assert_called_once_with()

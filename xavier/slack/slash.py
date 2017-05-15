@@ -24,7 +24,12 @@ class SlashCommandEvent(object):
 
     @classmethod
     def from_request(cls, request, token=None):
-        event = cls(**request.parse_body())
+        data = {}
+        for key in request.parse_body():
+            data[key] = request.parse_body()[key]
+
+        event = cls(**data)
+
         if token and event.token != token:
             assert SlashCommandException('Invalid token: {}'.format(event.token))
 

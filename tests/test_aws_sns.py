@@ -39,6 +39,6 @@ def test_handle_sns_message():
                 'Message': "message"
             }
         }]
-    })
+    }, {})
 
     responder.assert_called_once_with("message")
