@@ -9,19 +9,26 @@ logger = logging.getLogger(__name__)
 
 
 class Task(object):
-    def __init__(self, func, publish_event):
+    def __init__(self, func):
         self.func = func
         self.path = '%s.%s' % (func.__name__, func.__module__)
-        self.publish_event = publish_event
+        self.publish_event = None
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
     def delay(self, *args, **kwargs):
         event = jsonpickle.dumps((self.path, args, kwargs))
+        if not self.publish_event:
+            logger.error("This task has not yet been registered with a task queue")
+            return False
+
         self.publish_event(event)
 
         return True
+
+    def register_with_queue(self, publish_event):
+        self.publish_event = publish_event
 
     def __repr__(self):
         return self.__unicode__()
@@ -63,21 +70,24 @@ class TaskQueue(object):
         for func in scheduled_functions:
             func.delay()
 
+    def register_task(self, task, schedules):
+        self.functions[task.path] = task
+
+        for schedule in schedules:
+            if schedule not in self.schedules:
+                self.schedules[schedule] = []
+
+            if task.path not in self.schedules[schedule]:
+                self.schedules[schedule].append(task)
+
+        task.register_with_queue(self.publish_event)
+
     def task(self, schedules=None):
         schedules = schedules if schedules else []
 
         def wrapper(func):
-            func = Task(func, self.publish_event)
-
-            self.functions[func.path] = func
-
-            for schedule in schedules:
-                if schedule not in self.schedules:
-                    self.schedules[schedule] = []
-
-                if func.path not in self.schedules[schedule]:
-                    self.schedules[schedule].append(func)
-
+            func = Task(func)
+            self.register_task(func, schedules)
             return func
 
         return wrapper
