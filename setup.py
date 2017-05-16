@@ -10,6 +10,7 @@ packages = [
     'xavier',
     'xavier.aws',
     'xavier.slack',
+    'xavier.sentry',
 ]
 
 requires = [
