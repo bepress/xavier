@@ -130,7 +130,7 @@ def lambda_http_handler(router, event, context):
             Response(e.status_code, e.message)
         )
     except Exception as e:
-        logger.error("An unknown exception happend", exc_info=True)
+        logger.exception("An unknown exception happend", exc_info=True)
         return build_response(
             Response(500, 'Server error')
         )

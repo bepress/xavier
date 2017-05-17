@@ -28,24 +28,12 @@ from xavier.taskqueue import Task
 logger = logging.getLogger(__name__)
 
 
-SENTRY_CLIENT = None
-IN_SENTRY_REPORTER = False
-
-
 def get_sentry_client():
-    global SENTRY_CLIENT
-    if not SENTRY_CLIENT:
-        sentry_dsn = get_active_brain().env.get('SENTRY_DSN')
-        SENTRY_CLIENT = Client(sentry_dsn, transport=RequestsHTTPTransport)
-
-    return SENTRY_CLIENT
+    sentry_dsn = get_active_brain().env.get('SENTRY_DSN')
+    return Client(sentry_dsn, transport=RequestsHTTPTransport)
 
 
 def _record_sentry_exception(*args, **kwargs):
-    global IN_SENTRY_REPORTER
-
-    IN_SENTRY_REPORTER = True
-
     client = get_sentry_client()
 
     client.capture(*args, **kwargs)
@@ -73,9 +61,3 @@ class LambdaSentryHandler(SentryHandler):
         self.tags = kwargs.pop('tags', None)
 
         logging.Handler.__init__(self, level=kwargs.get('level', logging.NOTSET))
-
-    def can_record(self, record):
-        if IN_SENTRY_REPORTER:
-            return False
-
-        return super(LambdaSentryHandler, self).can_record(record)
