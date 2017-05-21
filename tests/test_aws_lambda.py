@@ -1,8 +1,10 @@
+import json
+
 from xavier.aws.func import LambdaHTTPEvent, build_lambda_router
 from xavier.http import Response, HTTPError, Router
 
 
-def build_raw_event(path=u'/abc', content_type='application/json', body=None):
+def build_raw_event(path=u'/abc', content_type='application/json', body=None, method='GET'):
     return {
         u'body': body,
         u'headers': {
@@ -25,7 +27,7 @@ def build_raw_event(path=u'/abc', content_type='application/json', body=None):
             u'Content-Type': content_type,
             u'x-api-key': u'54bUUzjrml4sQWuJiZP51EEQYe45g3j6rAuMjwO5'
         },
-        u'httpMethod': u'GET',
+        u'httpMethod': method,
         u'isBase64Encoded': False,
         u'path': path,
         u'pathParameters': {u'proxy': u'abc'},
@@ -33,7 +35,7 @@ def build_raw_event(path=u'/abc', content_type='application/json', body=None):
         u'requestContext': {
             u'accountId': u'140099371219',
             u'apiId': u'zih8gs4uja',
-            u'httpMethod': u'GET',
+            u'httpMethod': method,
             u'identity': {
                 u'accessKey': None,
                 u'accountId': None,
@@ -91,10 +93,30 @@ def test_parse_body():
 def test_build_lambda_router_for_brain():
     router = Router()
 
-    @router.add_route('/test')
-    def view_func(*args, **kwargs):
+    @router.add_route('/test', methods=["GET"])
+    def view_func_get(*args, **kwargs):
         return Response(200, {
-            'important': 'awesome'
+            'important': 'get'
+        })
+
+    @router.add_route('/test/cors', methods=["GET"], cors=True)
+    def view_func_cors(*args, **kwargs):
+        return Response(200, {
+            'important': 'cors'
+        })
+
+    @router.add_route('/test/cors', methods=["POST"], cors=True)
+    def view_func_cors_error(*args, **kwargs):
+        raise HTTPError(
+            "This is a message",
+            'cors-error',
+            599
+        )
+
+    @router.add_route('/test', methods=["POST"])
+    def view_func_post(*args, **kwargs):
+        return Response(200, {
+            'important': 'post'
         })
 
     @router.add_route('/error')
@@ -117,14 +139,42 @@ def test_build_lambda_router_for_brain():
 
     raw_event = build_raw_event('/test')
     resp = lambda_router(raw_event, {})
-    assert resp['body'] == '{"important": "awesome"}'
+    assert resp['body'] == '{"important": "get"}'
+
+    raw_event = build_raw_event('/test', method='POST')
+    resp = lambda_router(raw_event, {})
+    assert resp['body'] == '{"important": "post"}'
+
+    raw_event = build_raw_event('/test/cors', method='GET')
+    resp = lambda_router(raw_event, {})
+    assert resp['body'] == '{"important": "cors"}'
+    assert "Access-Control-Allow-Origin" in resp['headers']
+    assert resp['headers']["Access-Control-Allow-Origin"] == "*"
+
+    raw_event = build_raw_event('/test/cors', method='POST')
+    resp = lambda_router(raw_event, {})
+    assert json.loads(resp['body']) == {
+        "status_code": 599,
+        "slug": "cors-error",
+        "error": "This is a message"
+    }
+    assert "Access-Control-Allow-Origin" in resp['headers']
+    assert resp['headers']["Access-Control-Allow-Origin"] == "*"
 
     raw_event = build_raw_event('/error')
     resp = lambda_router(raw_event, {})
-    assert resp['body'] == '"This is a message"'
+    assert json.loads(resp['body']) == {
+        "error": "This is a message",
+        "status_code": 599,
+        "slug": "error-slug"
+    }
     assert resp['statusCode'] == "599"
 
     raw_event = build_raw_event('/really-error')
     resp = lambda_router(raw_event, {})
-    assert resp['body'] == '"Server error"'
+    assert json.loads(resp['body']) == {
+        "slug": "server-error",
+        "error": "Server Error",
+        "status_code": 500
+    }
     assert resp['statusCode'] == "500"

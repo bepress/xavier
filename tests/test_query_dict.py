@@ -10,6 +10,7 @@ def test_query_dict():
     assert qd.get('a') == 1
     assert qd['a'] == 1
     assert qd.get('b') is None
+
     with pytest.raises(MultiValueDictKeyError):
         assert qd['b'] is None
 

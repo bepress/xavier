@@ -115,24 +115,40 @@ def build_response(response):
 
 def lambda_http_handler(router, event, context):
     lambda_http_event = LambdaHTTPEvent.from_raw_event(event)
-    contoller = router.find_route(lambda_http_event.path)
+    contoller = router.find_route(lambda_http_event.path, lambda_http_event.method)
     if not contoller:
         return build_response(
             Response(404, "Missing route")
         )
 
+    extra_headers = {}
+    if contoller.get('cors'):
+        extra_headers['Access-Control-Allow-Origin'] = "*"
+
     try:
         response = contoller['view'](lambda_http_event)
+        headers = {}
+        headers.update(extra_headers)
+        headers.update(response.headers)
+        response.headers = headers
         return build_response(response)
     except HTTPError as e:
         logger.info("HTTPError happened status_code: %s message: %s", e.status_code, e.message)
         return build_response(
-            Response(e.status_code, e.message)
+            Response(e.status_code, {
+                "error": e.message,
+                "slug": e.slug,
+                "status_code": e.status_code,
+            }, headers=extra_headers)
         )
     except Exception as e:
         logger.exception("An unknown exception happend", exc_info=True)
         return build_response(
-            Response(500, 'Server error')
+            Response(500, {
+                "error": "Server Error",
+                "slug": "server-error",
+                "status_code": 500,
+            }, headers=extra_headers)
         )
 
 
