@@ -9,7 +9,8 @@ class SlashCommandException(Exception):
 class SlashCommandEvent(object):
     def __init__(self, token, team_id, team_domain,
                  channel_id, channel_name, user_id,
-                 user_name, command, text, response_url):
+                 user_name, command, text, response_url, trigger_id,
+                 *args, **kwargs):
 
         self.token = token
         self.team_id = team_id
@@ -21,6 +22,7 @@ class SlashCommandEvent(object):
         self.command = command
         self.text = text
         self.response_url = response_url
+        self.trigger_id = trigger_id
 
     @classmethod
     def from_request(cls, request, token=None):

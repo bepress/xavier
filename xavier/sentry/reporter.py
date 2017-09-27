@@ -48,7 +48,7 @@ def sentry_lambda_wrapper(func):
         try:
             return func(*args, **kwargs)
         except Exception as exc:
-            logger.excepton("uncaught exception", exc)
+            logger.exception("uncaught exception", exc)
             raise
 
     return _inside
